@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Design My Life — Avatar RPG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c:#00e5ff;--cd:#006064;--p:#b388ff;--pd:#4527a0;
+  --am:#ffca28;--gr:#69f0ae;--re:#ff5252;
+  --bg:#0a0e1a;--bg2:#0f1628;--bg3:#141e35;
+  --bo:rgba(0,229,255,0.15);--bo2:rgba(0,229,255,0.3);
+  --tx:#e0f7fa;--tx2:#80deea;--tx3:#4dd0e1
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--tx);font-family:'Courier New',monospace}
+body{display:flex;flex-direction:column;align-items:center;padding:20px 12px 40px}
+
+/* SCANLINES overlay */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:999}
+
+.app{width:100%;max-width:760px;background:var(--bg);border:1px solid var(--bo2);border-radius:14px;overflow:hidden;box-shadow:0 0 40px rgba(0,229,255,0.08)}
+
+/* HEADER */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--bo2);padding:16px 20px;display:flex;align-items:center;gap:16px}
+.av{width:56px;height:56px;border-radius:50%;border:2px solid var(--c);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;flex-shrink:0;background:var(--bg3);transition:box-shadow .3s}
+.av:hover{box-shadow:0 0 16px rgba(0,229,255,0.4)}
+.ai{flex:1;min-width:0}
+.an{font-size:18px;font-weight:700;color:var(--c);letter-spacing:1px;cursor:pointer;outline:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an:focus{border-bottom:1px solid var(--c)}
+.at{font-size:11px;color:var(--tx3);letter-spacing:3px;margin-top:3px;text-transform:uppercase}
+.xw{margin-top:6px}
+.xb{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;max-width:200px}
+.xf{height:100%;background:linear-gradient(90deg,var(--pd),var(--p));border-radius:3px;transition:width .6s}
+.xl{font-size:10px;color:var(--tx3);margin-top:3px}
+.lv{background:var(--bg3);border:1px solid var(--p);border-radius:10px;padding:8px 14px;text-align:center;flex-shrink:0}
+.ln{font-size:28px;font-weight:700;color:var(--p);line-height:1}
+.lt{font-size:10px;color:var(--tx3);letter-spacing:2px;margin-top:2px}
+
+/* STATS */
+.sbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--bo)}
+.si{background:var(--bg3);border:1px solid var(--bo);border-radius:8px;padding:8px 10px;transition:border-color .2s}
+.si:hover{border-color:var(--bo2)}
+.sl{font-size:10px;color:var(--tx3);letter-spacing:1px;margin-bottom:3px}
+.sv{font-size:16px;font-weight:700;margin-bottom:5px}
+.sb{height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.sf{height:100%;border-radius:2px;transition:width .6s}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--bo);align-items:center}
+.tb-label{font-size:10px;color:var(--tx3);letter-spacing:1px;margin-right:auto}
+.tbtn{background:none;border:1px solid var(--bo2);color:var(--tx2);font-family:inherit;font-size:11px;padding:5px 12px;border-radius:6px;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.tbtn:hover{background:rgba(0,229,255,.08);color:var(--c)}
+.tbtn.exp{border-color:rgba(105,240,174,.4);color:var(--gr)}
+.tbtn.exp:hover{background:rgba(105,240,174,.08)}
+.tbtn.imp{border-color:rgba(179,136,255,.4);color:var(--p)}
+.tbtn.imp:hover{background:rgba(179,136,255,.08)}
+
+/* NAV */
+.nav{display:flex;border-bottom:1px solid var(--bo);background:var(--bg2)}
+.nb{flex:1;padding:10px 4px;background:none;border:none;color:var(--tx2);font-family:inherit;font-size:11px;letter-spacing:1px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase}
+.nb:hover{color:var(--c);background:rgba(0,229,255,.04)}
+.nb.on{color:var(--c);border-bottom-color:var(--c);background:rgba(0,229,255,.06)}
+
+/* CONTENT */
+.cnt{padding:16px 20px;background:var(--bg);min-height:360px}
+.sec{display:none}
+.sec.on{display:block}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.st{font-size:12px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase}
+.ab{background:none;border:1px solid var(--bo2);color:var(--c);font-family:inherit;font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.ab:hover{background:rgba(0,229,255,.08)}
+
+/* GLOBAL PROGRESS */
+.prog-global{background:var(--bg3);border:1px solid var(--bo);border-radius:8px;padding:10px 14px;margin-bottom:14px}
+.pg-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.pg-title{font-size:11px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase}
+.pg-pct{font-size:14px;font-weight:700}
+.pg-bar{height:7px;background:var(--bg);border-radius:4px;overflow:hidden}
+.pg-fill{height:100%;border-radius:4px;transition:width .6s}
+
+/* QUOTE CARDS */
+.qc{background:var(--bg2);border-left:3px solid var(--p);border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px;position:relative}
+.qt{font-size:13px;color:var(--tx);line-height:1.7;font-style:italic;outline:none;cursor:text}
+.qa{font-size:11px;color:var(--tx3);margin-top:6px;letter-spacing:1px;outline:none;cursor:text}
+.qdel{position:absolute;right:10px;top:10px;background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;opacity:0;transition:opacity .2s}
+.qc:hover .qdel{opacity:1}
+
+/* ITEMS */
+.ic{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--bo);border-radius:8px;padding:10px 14px;margin-bottom:8px;transition:border-color .2s}
+.ic:hover{border-color:var(--bo2)}
+.ie{font-size:18px;flex-shrink:0;outline:none;cursor:pointer}
+.iname{flex:1;font-size:13px;color:var(--tx);outline:none;cursor:text}
+.iname.done{color:var(--tx3);text-decoration:line-through}
+.ibadge{font-size:10px;padding:3px 8px;border-radius:4px;letter-spacing:1px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all .2s}
+.bh{background:rgba(105,240,174,.15);color:var(--gr);border:1px solid rgba(105,240,174,.3)}
+.bw{background:rgba(0,229,255,.1);color:var(--c);border:1px solid var(--bo2)}
+.idel{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;opacity:0;transition:opacity .2s}
+.ic:hover .idel{opacity:1}
+
+/* HABITS */
+.hc{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--bo);border-radius:8px;padding:10px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .2s}
+.hc:hover{border-color:var(--bo2)}
+.hck{width:22px;height:22px;border:1px solid var(--bo2);border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:13px}
+.hck.done{background:rgba(105,240,174,.25);border-color:var(--gr);color:var(--gr)}
+.hn{flex:1;font-size:13px;outline:none;cursor:text}
+.hn.done{color:var(--tx3);text-decoration:line-through}
+.hstr{font-size:11px;color:var(--am);flex-shrink:0}
+.hdel{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;opacity:0;transition:opacity .2s}
+.hc:hover .hdel{opacity:1}
+
+/* MISSIONS */
+.mc{background:var(--bg2);border:1px solid var(--bo);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.mh{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.mcat{font-size:9px;padding:2px 7px;border-radius:3px;letter-spacing:1px;font-weight:700;flex-shrink:0;margin-top:2px;text-transform:uppercase}
+.cf{background:rgba(255,202,40,.15);color:var(--am)}
+.ch{background:rgba(105,240,174,.15);color:var(--gr)}
+.cm{background:rgba(179,136,255,.15);color:var(--p)}
+.cs{background:rgba(0,229,255,.1);color:var(--c)}
+.mtitle{flex:1;font-size:13px;color:var(--tx);font-weight:600;outline:none;cursor:text;line-height:1.5}
+.mdel{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:13px;opacity:0;transition:opacity .2s}
+.mc:hover .mdel{opacity:1}
+.mpw{display:flex;align-items:center;gap:10px}
+.mpb{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.mpf{height:100%;border-radius:3px;transition:width .5s}
+.mpp{font-size:11px;color:var(--tx3);min-width:32px;text-align:right}
+.mpbtns{display:flex;gap:5px;margin-top:8px}
+.mpbtn{background:none;border:1px solid var(--bo);color:var(--tx3);font-family:inherit;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .2s}
+.mpbtn:hover{border-color:var(--bo2);color:var(--tx)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.md{background:var(--bg2);border:1px solid var(--bo2);border-radius:12px;padding:20px;width:320px;max-width:100%}
+.md h3{font-size:12px;color:var(--c);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+.md input,.md select,.md textarea{display:block;width:100%;background:var(--bg3);border:1px solid var(--bo2);border-radius:6px;color:var(--tx);font-family:inherit;font-size:13px;padding:8px 10px;margin-bottom:10px;outline:none}
+.md input:focus,.md select:focus,.md textarea:focus{border-color:var(--c)}
+.md select option{background:var(--bg3);color:var(--tx)}
+.mbtns{display:flex;gap:8px;margin-top:4px}
+.mok{flex:1;background:rgba(0,229,255,.1);border:1px solid var(--c);color:var(--c);font-family:inherit;font-size:12px;padding:8px;border-radius:6px;cursor:pointer;letter-spacing:1px;transition:background .2s}
+.mok:hover{background:rgba(0,229,255,.2)}
+.mcc{flex:1;background:none;border:1px solid var(--bo);color:var(--tx3);font-family:inherit;font-size:12px;padding:8px;border-radius:6px;cursor:pointer;transition:all .2s}
+.mcc:hover{border-color:var(--bo2);color:var(--tx)}
+
+.empty{text-align:center;color:var(--tx3);font-size:12px;padding:32px;letter-spacing:1px}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--gr);color:var(--gr);font-family:'Courier New',monospace;font-size:12px;padding:8px 16px;border-radius:8px;letter-spacing:1px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:500}
+#toast.show{opacity:1}
+
+/* FOOTER */
+.footer{margin-top:16px;text-align:center;font-size:10px;color:var(--tx3);letter-spacing:2px;opacity:.5}
+
+@media(max-width:480px){
+  .sbar{grid-template-columns:repeat(2,1fr)}
+  .hdr{padding:12px 14px}
+  .cnt{padding:12px 14px}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="av" id="avE" title="Click pentru a schimba emoji">⚡</div>
+    <div class="ai">
+      <div class="an" id="avN" contenteditable="true" spellcheck="false">GHOST_RUNNER</div>
+      <div class="at">Arhitect al Destinului</div>
+      <div class="xw">
+        <div class="xb"><div class="xf" id="xpf" style="width:42%"></div></div>
+        <div class="xl" id="xpl">XP: 420 / 1000</div>
+      </div>
+    </div>
+    <div class="lv">
+      <div class="ln" id="lvn">7</div>
+      <div class="lt">NIVEL</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="sbar">
+    <div class="si"><div class="sl">💰 FINANCIAR</div><div class="sv" id="sv0" style="color:var(--am)">68</div><div class="sb"><div class="sf" id="sf0" style="width:68%;background:var(--am)"></div></div></div>
+    <div class="si"><div class="sl">⚡ ENERGIE</div><div class="sv" id="sv1" style="color:var(--gr)">75</div><div class="sb"><div class="sf" id="sf1" style="width:75%;background:var(--gr)"></div></div></div>
+    <div class="si"><div class="sl">🧠 MINTE</div><div class="sv" id="sv2" style="color:var(--p)">82</div><div class="sb"><div class="sf" id="sf2" style="width:82%;background:var(--p)"></div></div></div>
+    <div class="si"><div class="sl">🤝 SOCIAL</div><div class="sv" id="sv3" style="color:var(--c)">55</div><div class="sb"><div class="sf" id="sf3" style="width:55%;background:var(--c)"></div></div></div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <span class="tb-label">SAVE / LOAD DATE</span>
+    <button class="tbtn exp" onclick="exportJSON()">⬇ Export JSON</button>
+    <button class="tbtn imp" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <button class="nb on" onclick="sw('quotes',this)">📜 Citate</button>
+    <button class="nb" onclick="sw('items',this)">🎒 Wishlist</button>
+    <button class="nb" onclick="sw('habits',this)">🔥 Obiceiuri</button>
+    <button class="nb" onclick="sw('missions',this)">🎯 Misiuni</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="cnt">
+
+    <div class="sec on" id="tab-quotes">
+      <div class="sh"><span class="st">Cod de Conduită</span><button class="ab" onclick="openM('quote')">+ Adaugă</button></div>
+      <div id="qlist"></div>
+    </div>
+
+    <div class="sec" id="tab-items">
+      <div class="sh"><span class="st">Wishlist Inventar</span><button class="ab" onclick="openM('item')">+ Adaugă</button></div>
+      <div class="prog-global">
+        <div class="pg-label"><span class="pg-title">Wishlist completat</span><span class="pg-pct" id="wishpct" style="color:var(--gr)">0%</span></div>
+        <div class="pg-bar"><div class="pg-fill" id="wishfill" style="background:var(--gr);width:0%"></div></div>
+      </div>
+      <div id="ilist"></div>
+    </div>
+
+    <div class="sec" id="tab-habits">
+      <div class="sh"><span class="st">Rutine Zilnice</span><button class="ab" onclick="openM('habit')">+ Adaugă</button></div>
+      <div class="prog-global">
+        <div class="pg-label"><span class="pg-title">Completate azi</span><span class="pg-pct" id="habpct" style="color:var(--am)">0%</span></div>
+        <div class="pg-bar"><div class="pg-fill" id="habfill" style="background:var(--am);width:0%"></div></div>
+      </div>
+      <div id="hlist"></div>
+    </div>
+
+    <div class="sec" id="tab-missions">
+      <div class="sh"><span class="st">Misiuni Active</span><button class="ab" onclick="openM('mission')">+ Adaugă</button></div>
+      <div class="prog-global">
+        <div class="pg-label"><span class="pg-title">Progres general misiuni</span><span class="pg-pct" id="mispct" style="color:var(--p)">0%</span></div>
+        <div class="pg-bar"><div class="pg-fill" id="misfill" style="background:var(--p);width:0%"></div></div>
+      </div>
+      <div id="mlist"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer">DESIGN MY LIFE — AVATAR RPG &nbsp;·&nbsp; v1.0</div>
+<div id="toast"></div>
+<div id="mc"></div>
+
+<script>
+var DEF = {
+  emoji:'⚡', name:'GHOST_RUNNER', level:7, xp:420, xpMax:1000,
+  stats:[68,75,82,55],
+  statMap:{fin:0,health:1,mind:2,social:3},
+  quotes:[
+    {text:'Nu construiești un zid. Pui o cărămidă cât mai perfect posibil — zi după zi.',author:'— Will Smith'},
+    {text:'Libertatea financiară nu e un vis. E un plan executat cu disciplină.',author:'— Mindset Cyber'},
+    {text:'Cel mai bun moment să plantezi un copac era acum 20 de ani. Al doilea cel mai bun e acum.',author:'— Proverb chinez'}
+  ],
+  items:[
+    {name:'Standing Desk',icon:'🖥️',have:true},
+    {name:'Libertate Financiară',icon:'💎',have:false},
+    {name:'Apartament propriu',icon:'🏠',have:false},
+    {name:'MacBook Pro',icon:'💻',have:true}
+  ],
+  habits:[
+    {name:'Dimineață activă (workout 30 min)',done:false,streak:12,stat:'health'},
+    {name:'Citit 20 pagini',done:false,streak:5,stat:'mind'},
+    {name:'Revizuit obiective zilnice',done:true,streak:21,stat:'mind'},
+    {name:'Fără social media înainte de 10:00',done:false,streak:3,stat:'social'}
+  ],
+  missions:[
+    {title:'Economisit 20% din venit 3 luni consecutive',cat:'fin',progress:65},
+    {title:'Construiește un skill vandabil',cat:'mind',progress:40},
+    {title:'Workout de 4x pe săptămână',cat:'health',progress:80},
+    {title:'Extinde rețeaua cu 5 persoane valoroase',cat:'social',progress:20}
+  ]
+};
+
+var S = JSON.parse(JSON.stringify(DEF));
+var emojis = ['⚡','🔥','💀','🤖','👾','🦾','🧬','💥','🎯','⚔️'];
+var eidx = 0;
+var mtype = null;
+
+function save(){try{localStorage.setItem('dml_rpg',JSON.stringify(S));}catch(e){}}
+function load(){
+  try{
+    var d = localStorage.getItem('dml_rpg');
+    if(d){ S = JSON.parse(d); if(!S.statMap) S.statMap={fin:0,health:1,mind:2,social:3}; }
+  }catch(e){}
+}
+
+function exportJSON(){
+  var blob = new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  var d = new Date();
+  a.download = 'dml_rpg_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ Date exportate cu succes!');
+}
+
+function importJSON(ev){
+  var file = ev.target.files[0]; if(!file) return;
+  var r = new FileReader();
+  r.onload = function(e){
+    try{
+      var p = JSON.parse(e.target.result);
+      if(!p.quotes||!p.items||!p.habits||!p.missions){toast('⚠️ Fișier invalid!');return;}
+      if(!p.statMap) p.statMap={fin:0,health:1,mind:2,social:3};
+      S = p; save(); updHdr(); renderAll();
+      toast('✅ Date importate cu succes!');
+    }catch(err){toast('⚠️ Eroare la import!');}
+  };
+  r.readAsText(file);
+  ev.target.value='';
+}
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2400);
+}
+
+function gainXP(n){
+  S.xp += n;
+  while(S.xp >= S.xpMax){S.xp -= S.xpMax; S.level++; S.xpMax = Math.round(S.xpMax*1.2); toast('⬆️ LEVEL UP! Nivel '+S.level);}
+  updHdr();
+}
+
+function bumpStat(key,delta){
+  var idx = S.statMap[key]; if(idx===undefined) return;
+  S.stats[idx] = Math.max(0,Math.min(100,S.stats[idx]+delta));
+  updHdr();
+}
+
+function updHdr(){
+  document.getElementById('lvn').textContent = S.level;
+  var p = Math.round((S.xp/S.xpMax)*100);
+  document.getElementById('xpf').style.width = p+'%';
+  document.getElementById('xpl').textContent = 'XP: '+S.xp+' / '+S.xpMax;
+  document.getElementById('avE').textContent = S.emoji||'⚡';
+  var avN = document.getElementById('avN');
+  if(avN && document.activeElement!==avN) avN.textContent = S.name||'GHOST_RUNNER';
+  for(var i=0;i<4;i++){
+    document.getElementById('sv'+i).textContent = S.stats[i];
+    document.getElementById('sf'+i).style.width = S.stats[i]+'%';
+  }
+}
+
+function sw(tab,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('tab-'+tab).classList.add('on');
+  btn.classList.add('on');
+  renderAll();
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* QUOTES */
+function renderQuotes(){
+  var el = document.getElementById('qlist');
+  if(!S.quotes.length){el.innerHTML='<div class="empty">Niciun citat. Adaugă primul tău cod.</div>';return;}
+  el.innerHTML = S.quotes.map(function(q,i){
+    return '<div class="qc"><button class="qdel" onclick="delQ('+i+')">✕</button>'+
+      '<div class="qt" contenteditable="true" spellcheck="false" onblur="editQ('+i+',\'text\',this.textContent)">'+esc(q.text)+'</div>'+
+      '<div class="qa" contenteditable="true" spellcheck="false" onblur="editQ('+i+',\'author\',this.textContent)">'+esc(q.author)+'</div>'+
+      '</div>';
+  }).join('');
+}
+function editQ(i,f,v){S.quotes[i][f]=v.trim();save();}
+function delQ(i){S.quotes.splice(i,1);save();renderQuotes();}
+
+/* ITEMS */
+function wishPct(){if(!S.items.length)return 0;return Math.round(S.items.filter(function(x){return x.have;}).length/S.items.length*100);}
+function renderItems(){
+  var el = document.getElementById('ilist');
+  var pct = wishPct();
+  document.getElementById('wishpct').textContent = pct+'%';
+  document.getElementById('wishfill').style.width = pct+'%';
+  if(!S.items.length){el.innerHTML='<div class="empty">Inventarul e gol. Adaugă primul item.</div>';return;}
+  el.innerHTML = S.items.map(function(it,i){
+    return '<div class="ic">'+
+      '<span class="ie" contenteditable="true" spellcheck="false" onblur="editItem('+i+',\'icon\',this.textContent)">'+esc(it.icon)+'</span>'+
+      '<span class="iname'+(it.have?' done':'')+'" contenteditable="true" spellcheck="false" onblur="editItem('+i+',\'name\',this.textContent)">'+esc(it.name)+'</span>'+
+      '<span class="ibadge '+(it.have?'bh':'bw')+'" onclick="toggleItem('+i+')" title="Click pentru a schimba status">'+(it.have?'✓ AM':'◎ VREAU')+'</span>'+
+      '<button class="idel" onclick="delItem('+i+')">✕</button>'+
+      '</div>';
+  }).join('');
+}
+function editItem(i,f,v){S.items[i][f]=v.trim();save();}
+function toggleItem(i){
+  var prev = S.items[i].have; S.items[i].have = !prev;
+  if(!prev){gainXP(20);bumpStat('fin',3);toast('💎 Item obținut! +20 XP  +3 Financiar');}
+  save();renderItems();
+}
+function delItem(i){S.items.splice(i,1);save();renderItems();}
+
+/* HABITS */
+function habPct(){if(!S.habits.length)return 0;return Math.round(S.habits.filter(function(x){return x.done;}).length/S.habits.length*100);}
+function renderHabits(){
+  var el = document.getElementById('hlist');
+  var pct = habPct();
+  document.getElementById('habpct').textContent = pct+'%';
+  document.getElementById('habfill').style.width = pct+'%';
+  if(!S.habits.length){el.innerHTML='<div class="empty">Nicio rutină activă.</div>';return;}
+  el.innerHTML = S.habits.map(function(h,i){
+    return '<div class="hc" onclick="toggleHab('+i+')">'+
+      '<div class="hck'+(h.done?' done':'')+'">'+( h.done?'✓':'')+'</div>'+
+      '<span class="hn'+(h.done?' done':'')+'" contenteditable="true" spellcheck="false" onclick="event.stopPropagation()" onblur="editHab('+i+',this.textContent)">'+esc(h.name)+'</span>'+
+      '<span class="hstr">🔥 '+h.streak+'</span>'+
+      '<button class="hdel" onclick="event.stopPropagation();delHab('+i+')">✕</button>'+
+      '</div>';
+  }).join('');
+}
+function editHab(i,v){S.habits[i].name=v.trim();save();}
+function toggleHab(i){
+  var h = S.habits[i]; h.done = !h.done;
+  if(h.done){h.streak++;gainXP(15);bumpStat(h.stat||'health',2);toast('+15 XP — Obicei bifat!');}
+  else{h.streak=Math.max(0,h.streak-1);}
+  save();renderHabits();updHdr();
+}
+function delHab(i){S.habits.splice(i,1);save();renderHabits();}
+
+/* MISSIONS */
+function misPct(){if(!S.missions.length)return 0;return Math.round(S.missions.reduce(function(a,m){return a+m.progress;},0)/S.missions.length);}
+var catC={fin:'cf',health:'ch',mind:'cm',social:'cs'};
+var catL={fin:'FINANCIAR',health:'SĂNĂTATE',mind:'MINTE',social:'SOCIAL'};
+var pCol={fin:'var(--am)',health:'var(--gr)',mind:'var(--p)',social:'var(--c)'};
+function renderMissions(){
+  var el = document.getElementById('mlist');
+  var pct = misPct();
+  document.getElementById('mispct').textContent = pct+'%';
+  document.getElementById('misfill').style.width = pct+'%';
+  if(!S.missions.length){el.innerHTML='<div class="empty">Nicio misiune activă.</div>';return;}
+  el.innerHTML = S.missions.map(function(m,i){
+    return '<div class="mc"><div class="mh">'+
+      '<span class="mcat '+(catC[m.cat]||'cf')+'">'+(catL[m.cat]||m.cat.toUpperCase())+'</span>'+
+      '<span class="mtitle" contenteditable="true" spellcheck="false" onblur="editMis('+i+',this.textContent)">'+esc(m.title)+'</span>'+
+      '<button class="mdel" onclick="delMis('+i+')">✕</button>'+
+      '</div><div class="mpw"><div class="mpb"><div class="mpf" style="width:'+m.progress+'%;background:'+(pCol[m.cat]||'var(--c)')+'"></div></div><span class="mpp">'+m.progress+'%</span></div>'+
+      '<div class="mpbtns"><button class="mpbtn" onclick="chgP('+i+',-10)">-10%</button><button class="mpbtn" onclick="chgP('+i+',10)">+10%</button><button class="mpbtn" onclick="chgP('+i+',25)">+25%</button></div>'+
+      '</div>';
+  }).join('');
+}
+function editMis(i,v){S.missions[i].title=v.trim();save();}
+function delMis(i){S.missions.splice(i,1);save();renderMissions();}
+function chgP(i,d){
+  var m = S.missions[i], prev = m.progress;
+  m.progress = Math.max(0,Math.min(100,m.progress+d));
+  if(d>0){gainXP(d*2);bumpStat(m.cat,Math.round(d/5));}
+  if(m.progress===100&&prev<100) toast('🎯 MISIUNE COMPLETĂ! Felicitări!');
+  save();renderMissions();updHdr();
+}
+
+function renderAll(){renderQuotes();renderItems();renderHabits();renderMissions();}
+
+/* MODAL */
+function openM(type){
+  mtype = type; var h='';
+  if(type==='quote'){
+    h='<div class="overlay" onclick="if(event.target===this)closeM()"><div class="md"><h3>Citat Nou</h3>'+
+      '<textarea id="mi_t" placeholder="Textul citatului..." rows="3" style="resize:none"></textarea>'+
+      '<input id="mi_a" placeholder="Autor (opțional)"/>'+
+      '<div class="mbtns"><button class="mok" onclick="subM()">Adaugă</button><button class="mcc" onclick="closeM()">Anulează</button></div></div></div>';
+  }else if(type==='item'){
+    h='<div class="overlay" onclick="if(event.target===this)closeM()"><div class="md"><h3>Item Nou</h3>'+
+      '<input id="mi_n" placeholder="Numele itemului"/>'+
+      '<input id="mi_e" placeholder="Emoji icon (ex: 🏠)"/>'+
+      '<select id="mi_h"><option value="want">◎ Vreau</option><option value="have">✓ Am deja</option></select>'+
+      '<div class="mbtns"><button class="mok" onclick="subM()">Adaugă</button><button class="mcc" onclick="closeM()">Anulează</button></div></div></div>';
+  }else if(type==='habit'){
+    h='<div class="overlay" onclick="if(event.target===this)closeM()"><div class="md"><h3>Obicei Nou</h3>'+
+      '<input id="mi_n" placeholder="Descriere obicei"/>'+
+      '<select id="mi_s"><option value="health">⚡ Energie</option><option value="fin">💰 Financiar</option><option value="mind">🧠 Minte</option><option value="social">🤝 Social</option></select>'+
+      '<div class="mbtns"><button class="mok" onclick="subM()">Adaugă</button><button class="mcc" onclick="closeM()">Anulează</button></div></div></div>';
+  }else if(type==='mission'){
+    h='<div class="overlay" onclick="if(event.target===this)closeM()"><div class="md"><h3>Misiune Nouă</h3>'+
+      '<input id="mi_n" placeholder="Titlul misiunii"/>'+
+      '<select id="mi_c"><option value="fin">💰 Financiar</option><option value="health">⚡ Sănătate</option><option value="mind">🧠 Minte</option><option value="social">🤝 Social</option></select>'+
+      '<div class="mbtns"><button class="mok" onclick="subM()">Adaugă</button><button class="mcc" onclick="closeM()">Anulează</button></div></div></div>';
+  }
+  document.getElementById('mc').innerHTML = h;
+}
+function closeM(){document.getElementById('mc').innerHTML='';}
+function subM(){
+  if(mtype==='quote'){
+    var t=document.getElementById('mi_t').value.trim();
+    var a=document.getElementById('mi_a').value.trim()||'— Anonim';
+    if(!t)return; S.quotes.push({text:t,author:a}); toast('📜 Citat adăugat!'); renderQuotes();
+  }else if(mtype==='item'){
+    var n=document.getElementById('mi_n').value.trim();
+    var e=document.getElementById('mi_e').value.trim()||'📦';
+    var hv=document.getElementById('mi_h').value==='have';
+    if(!n)return; S.items.push({name:n,icon:e,have:hv}); toast('🎒 Item adăugat!'); renderItems();
+  }else if(mtype==='habit'){
+    var n=document.getElementById('mi_n').value.trim();
+    var st=document.getElementById('mi_s').value;
+    if(!n)return; S.habits.push({name:n,done:false,streak:0,stat:st}); toast('🔥 Obicei adăugat!'); renderHabits();
+  }else if(mtype==='mission'){
+    var n=document.getElementById('mi_n').value.trim();
+    var ct=document.getElementById('mi_c').value;
+    if(!n)return; S.missions.push({title:n,cat:ct,progress:0}); gainXP(30); toast('🎯 Misiune activată! +30 XP'); renderMissions();
+  }
+  save(); closeM();
+}
+
+/* AVATAR */
+document.getElementById('avE').addEventListener('click',function(){
+  eidx=(eidx+1)%emojis.length; S.emoji=emojis[eidx]; this.textContent=S.emoji; save();
+});
+var avN = document.getElementById('avN');
+avN.addEventListener('blur',function(){
+  S.name=this.textContent.trim().toUpperCase()||'GHOST_RUNNER';
+  this.textContent=S.name; save();
+});
+avN.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();this.blur();}});
+
+/* INIT */
+load(); updHdr(); renderAll();
+</script>
+</body>
+</html>
